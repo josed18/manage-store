@@ -1,0 +1,164 @@
+{% extends "public/base.html" %}
+{% load static %}
+
+{% block content %}
+    <div ng-controller="productController" ng-init="getProducts()">
+        <div class="container">
+            <div class="row">
+                <h1>Products</h1>
+            </div>
+            <div class="row">
+                <div class="col-md-offset-2 col-sm-12 m-2 form-inline">
+                    <div>
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createProductModal">
+                            <span class="fa fa-plus"></span> New Product
+                        </button>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <select name="store" class="form-control" id="productStoreFilter" ng-model="storeFilter" required="required" ng-change="filterByStore(storeFilter)">
+                            <option value="" disabled>Select a Store</option>
+                            <option value="{[{ store.id }]}" ng-repeat="store in stores">{[{ store.name }]}</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-offset-2 col-sm-12">
+                    <table class="table table-dark table-striped">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Price</th>
+                                <th>Stock</th>
+                                <th>Store</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="product in products">
+                                <td>{[{ product.name }]}</td>
+                                <td>{[{ product.description }]}</td>
+                                <td>{[{ product.price | currency }]}</td>
+                                <td>{[{ product.stock }]}</td>
+                                <td>{[{ product.store_name }]}</td>
+                                <td>
+                                    <button type="button" class="btn btn-outline-light" ng-disabled="deleting" ng-click="openEdit(product)">
+                                        <span class="fa fa-edit text-info" title="edit"></span>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-light" ng-disabled="deleting" ng-click="deleteProduct(product)">
+                                        <span class="fa text-danger" ng-class="product.deleting?'fa-spin fa-spinner':'fa-trash-alt'" title="delete"></span>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+
+                    </table>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- modals -->
+        <div class="modal fade" id="createProductModal" tabindex="-1" role="dialog" aria-labelledby="createProductModal" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="createProductModal">Create Product</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <p class="alert-danger p-2" ng-hide="errorCreate === ''"><span class="fa fa-exclamation-triangle"></span> {[{errorCreate}]}</p>
+                <ng-form name="createProductForm">
+                    <div class="form-group">
+                        <label for="createProductName">Name</label>
+                        <input type="text" name="name" class="form-control" id="createProductName" ng-model="newProduct.name" maxlength="50" required="required">
+                    </div>
+                    <div class="form-group">
+                        <label for="createProductDescription">Description</label>
+                        <textarea name="description" class="form-control" id="createProductDescription" ng-model="newProduct.description" cols="30" rows="5"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="createProductPrice">Price</label>
+                        <input type="number" name="price" class="form-control" id="createProductPrice" ng-model="newProduct.price" min="0.01" step="0.01" required="required">
+                    </div>
+                    <div class="form-group">
+                        <label for="createProductStock">Stock</label>
+                        <input type="number" name="stock" class="form-control" id="createProductStock" ng-model="newProduct.stock" min="0" step="1" required="required">
+                    </div>
+                    <div class="form-group">
+                        <label for="createProductStore">Store</label>
+                        <select name="store" class="form-control" id="createProductStore" ng-model="newProduct.store" required="required">
+                            <option value="" disabled>Select a Store</option>
+                            <option value="{[{ store.id }]}" ng-repeat="store in stores">{[{ store.name }]}</option>
+                        </select>
+                    </div>
+                </ng-form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-success" ng-disabled="createProductForm.$invalid || creating" ng-click="createProduct(newProduct)">
+                    Create
+                    <span class="fa fa-spin fa-spinner" ng-show="creating"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal fade" id="editProductModal" tabindex="-1" role="dialog" aria-labelledby="editProductModal" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="editProductModal">Edit Product</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <p class="alert-danger p-2" ng-hide="errorEdit === ''"><span class="fa fa-exclamation-triangle"></span> {[{errorEdit}]}</p>
+                <ng-form name="editProductForm">
+                    <div class="form-group">
+                        <label for="editProductName">Name</label>
+                        <input type="text" name="name" class="form-control" id="editProductName" ng-model="productToEdit.name" maxlength="50" required="required">
+                    </div>
+                    <div class="form-group">
+                        <label for="editProductDescription">Description</label>
+                        <textarea name="description" class="form-control" id="editProductDescription" ng-model="productToEdit.description" cols="30" rows="5"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="editProductPrice">Price</label>
+                        <input type="number" name="price" class="form-control" id="editProductPrice" ng-model="productToEdit.price" min="0.01" step="0.01" required="required">
+                    </div>
+                    <div class="form-group">
+                        <label for="editProductStock">Stock</label>
+                        <input type="number" name="stock" class="form-control" id="editProductStock" ng-model="productToEdit.stock" min="0" step="1" required="required">
+                    </div>
+                    <div class="form-group">
+                        <label for="editProductStore">Store</label>
+                        <select name="store" class="form-control" id="editProductStore" ng-model="productToEdit.store" required="required">
+                            <option value="" disabled>Select a Store</option>
+                            <option value="{[{ store.id }]}" ng-repeat="store in stores" ng-selected="store.id==productToEdit.store">{[{ store.name }]}</option>
+                        </select>
+                    </div>
+                </ng-form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-success" ng-disabled="editProductForm.$invalid || editing" ng-click="editProduct(productToEdit)">
+                    Save
+                    <span class="fa fa-spin fa-spinner" ng-show="editing"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'public/js/app/product.controller.js' %}"></script>
+{% endblock %}

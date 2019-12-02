@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es"  ng-app="app">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Store</title>
+    <link rel="stylesheet" href="{% static 'public/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'public/css/all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'public/css/style.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block stylesheets %}
+    {% endblock %}
+</head>
+<body class="background" >
+    <div class="container">
+        <div class="row mt-5 mb-3">
+            <div class="col-md-offset-2 col-sm-12">
+                <div class="align-content-between">
+                    <a class="btn btn-info" href="/"><span class="fa fa-store"></span> Stores</a>
+                    <a class="btn btn-info" href="/products/"><span class="fa fa-shopping-bag"></span> Products</a>
+                    <a class="btn btn-info" href="/sales/"><span class="fa fa-tag"></span> Sales</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% block content %}
+    {% endblock %}
+
+    <script src="{% static 'public/js/lib/jquery-3.3.1.min.js' %}"></script>
+    <script src="{% static 'public/js/lib/bootstrap.min.js' %}"></script>
+
+    <script src="{% static 'public/js/lib/angular.js' %}"></script>
+    <script src="{% static 'public/js/lib/angular-route.js' %}"></script>
+
+    <script src="{% static 'public/js/app/url.js' %}"></script>
+
+    <script src="{% static 'public/js/app/app.js' %}"></script>
+    <script src="{% static 'public/js/app/sevice.js' %}"></script>
+    {% block scripts %}
+    {% endblock %}
+</body>
+</html>
